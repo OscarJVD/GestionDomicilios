@@ -1,0 +1,417 @@
+drop database if exists solumobil;
+
+
+create database if not exists solumobil;
+use solumobil;
+
+create table Categoria_Estado(   /*UN SERVICIO SOLO PUEDE TENER UN ESTADO*/
+id_categoria_estado_PK     			int not null auto_increment,
+nombre_categoria_estado             varchar(50),
+primary key (id_categoria_estado_PK)
+);
+
+create table Estado(   /*UN SERVICIO SOLO PUEDE TENER UN ESTADO*/
+id_estado_PK     			int not null auto_increment,
+id_categoria_estado_FK		int not null,
+nombre_estado               varchar(50),
+foreign key (id_categoria_estado_FK)       references  Categoria_Estado      (id_categoria_estado_PK),
+primary key (id_estado_PK)
+);
+
+create table Tipo_Documento(    /*MUCHOS CLIENTES PUEDEN TENER EL MISMO TIPO DE DOCUMENTO*/
+id_tipo_documento_PK      int not null auto_increment,
+nombre_td                 varchar(40) not null,
+primary key (id_tipo_documento_PK)
+);
+
+create table Rol(              /*---Los dos tipo de tecnico----*//*MUCHOS usuarioS DE USUARIO PUEDEn tener  UN mismo ROL*/
+id_rol_PK                 int not null auto_increment, /*---Al cliente no le pide el rol----*/
+id_estado_rol_FK              int not null,
+nombre_rol                varchar(100) not null,
+foreign key (id_estado_rol_FK)       references  Estado      (id_estado_PK),
+primary key (id_rol_PK)
+);
+
+
+create table Usuario(     /*un usuario de usuario solo puede hacerse una vez, ya sea por el cliente o por el cualquier otro rol*/
+id_usuario_PK            int not null auto_increment,  
+id_rol_FK                 int not null,
+id_estado_usuario_FK              int not null,
+correo_electronico        varchar(200) not null,
+clave	                  varchar(200) not null,
+foreign key (id_rol_FK)   references    Rol     (id_rol_PK),
+foreign key (id_estado_usuario_FK)       references  Estado      (id_estado_PK),
+primary key (id_usuario_PK)   
+);
+
+
+create table Barrio_Cliente(   /*un cliente solo puede tener un barrio, o muchos cleintes pueden tener el mismo barrio*/
+id_barrio_PK              int not null auto_increment,
+id_estado_bc_FK              int not null,
+nombre_barrio             varchar(300) not null,
+foreign key (id_estado_bc_FK)       references  Estado      (id_estado_PK),
+primary key (id_barrio_PK)
+);
+
+
+create table Cliente(     /*Un cliente puede tener muchas revisiones de servicio, muchas citaciones, muchos servicios*/
+id_cliente_PK             int not null auto_increment,
+id_barrio_FK              int not null,    /*MUCHOS CLIENTES TIENEN UN BARRIO*/
+id_usuario_FK            int not null, 
+id_tipo_documento_FK      int not null,
+nombre_cliente           varchar(100) not null,    
+numero_documento          varchar(50) not null,
+telefono                  varchar(15) null,       /*---Campo sin calculo alfanumerico----*/
+direccion_residencia      varchar(500) not null,
+foto_cliente              longblob null,
+primary key (id_cliente_PK),
+foreign key (id_barrio_FK)   references    Barrio_Cliente     (id_barrio_PK),
+foreign key (id_usuario_FK)   references    Usuario     (id_usuario_PK),
+foreign key (id_tipo_documento_FK)   references    Tipo_Documento     (id_tipo_documento_PK)
+);
+
+
+create table Tecnico(      
+id_tecnico_PK             int not null auto_increment,
+id_tipo_documento_FK      int not null, 
+id_usuario_FK             int not null, 
+nombre_tecnico           varchar(100) not null,    
+telefono                  varchar(15) null,       /*---Campo sin calculo alfanumerico----*/
+numero_documento          varchar(15) not null,
+foto_tecnico              longblob null,
+foreign key (id_usuario_FK)   references    Usuario     (id_usuario_PK), 
+foreign key (id_tipo_documento_FK)   references    Tipo_Documento     (id_tipo_documento_PK),
+primary key (id_tecnico_PK)
+);
+
+
+create table Marca_Artefacto(        
+id_marca_artefacto_PK     int not null auto_increment,
+id_estado_ma_FK              int not null,
+nombre_marca              varchar(150),
+foreign key (id_estado_ma_FK)       references  Estado      (id_estado_PK),
+primary key (id_marca_artefacto_PK)
+);
+
+
+create table Categoria_Artefacto(    
+id_categoria_artefacto_PK   int not null auto_increment,
+id_estado_ca_FK              int not null,
+nombre_categoria_artefacto  varchar(100),
+foreign key (id_estado_ca_FK)       references  Estado      (id_estado_PK),
+primary key (id_categoria_artefacto_PK)
+);
+
+
+create table Artefacto(             
+id_artefacto_PK           int not null auto_increment,
+id_marca_artefacto_FK     int not null,
+id_categoria_artefacto_FK int not null,
+id_estado_artefacto_FK              int not null,
+modelo                    varchar(250),
+caracteristicas           varchar(1000),
+foreign key (id_marca_artefacto_FK)     references  Marca_Artefacto      (id_marca_artefacto_PK),
+foreign key (id_categoria_artefacto_FK)     references  Categoria_Artefacto      (id_categoria_artefacto_PK),
+foreign key (id_estado_artefacto_FK)       references  Estado      (id_estado_PK),
+primary key (id_artefacto_PK)
+);
+
+create table Categoria_Servicio(        
+id_categoria_servicio_PK     int not null auto_increment,
+id_estado_cs_FK              int not null,
+nombre_categoria_servicio    varchar(200) not null,
+foreign key (id_estado_cs_FK)       references  Estado      (id_estado_PK),
+primary key (id_categoria_servicio_PK) 
+);
+
+
+create table Citacion(     
+id_citacion_PK            int not null auto_increment,
+id_estado_citacion_FK              int not null,
+direccion_lugar           varchar(300) not null,
+fecha_encuentro           date not null,
+hora_encuentro            time null,
+foreign key (id_estado_citacion_FK)       references  Estado      (id_estado_PK),   
+primary key (id_citacion_PK)
+);
+
+
+create table Servicio(        
+id_servicio_PK            int not null auto_increment,
+id_cliente_FK		      int not null,
+id_estado_servicio_FK     int not null,
+fecha_peticion            date null,
+hora_peticion             time null,
+costo_servicio            float not null,
+foreign key (id_estado_servicio_FK)       references  Estado      (id_estado_PK),
+foreign key (id_cliente_FK)       references  Cliente    (id_cliente_PK),
+primary key (id_servicio_PK)
+);
+
+
+create table Revision_Servicio(      
+id_revision_servicio_PK   int not null auto_increment,
+id_artefacto_FK 		  int not null,
+id_servicio_FK 		      int not null,
+id_citacion_FK 		      int not null,
+id_categoria_servicio_FK  int not null,
+id_tecnico_asignado_FK    int not null,
+categoria_arreglo         bit null,
+descripcion_cliente       varchar(1000) null, -- ligero cambio
+diagnostico               varchar(650) not null,
+costo_revision            float not null,
+fecha_inicio              date not null,
+fecha_fin                 date not null,
+foreign key (id_artefacto_FK)       references  Artefacto      (id_artefacto_PK),
+foreign key (id_servicio_FK)       references  Servicio      (id_servicio_PK),
+foreign key (id_citacion_FK)       references  Citacion              (id_citacion_PK),
+foreign key (id_categoria_servicio_FK)     references  Categoria_Servicio      (id_categoria_servicio_PK),
+foreign key (id_tecnico_asignado_FK)       references  Tecnico              (id_tecnico_PK),
+primary key (id_revision_servicio_PK)
+);
+
+
+/*---INSERCION DE DATOS----*/
+
+/*COMPLETO*/
+
+insert into Categoria_Estado values(null,"Servicio"), -- eliminar esto
+						           (null,"Usuario"),
+						           (null,"General");
+
+insert into Estado values(null,'1',"Por recoger"), -- dejar el estado para el servicio unicamente y el estado de lo demas en booleano
+						  (null,'1',"En proceso"),
+						  (null,'1',"En espera"),
+						  (null,'1',"Finalizado"),
+						  (null,'1',"Cancelado"),
+                          (null,'2',"Activo"),
+                          (null,'2',"Inactivo"),
+						  (null,'3',"Descontinuada"), --
+                          (null,'3',"Disponible"), --
+                          (null,'3',"Erroneo"); -- arreglar esto
+                          
+
+
+insert into Tipo_Documento values(null,'C.C (Cédula de Ciudadanía)'),
+								 (null,'T.I (Tarjeta de Identidad)'),
+								 (null,'C.E (Cédula de Extranjería)'),
+								 (null,'P.A (Pasaporte)'),
+								 (null,'R.C (usuario Civil)');
+
+
+
+insert into Rol values(null,'6','Tecnico Administrador'),
+(null,'7','Tecnico Empleado'),
+(null,'7','Cliente'),
+(null,'7','Cliente Externo'); 
+
+
+insert into Usuario values(null,'1','6','vargas.rodolfo0627@gmail.com','123'),
+(null,'1','6','oscarjaviervargas@hotmail.com','delfinesvoladores2020'),
+(null,'2','6','victor2014guerrero@gmail.com','124'),
+(null,'3','6','hduque@gmail.com','132'),
+(null,'4','6','sin especificar','0000000'); 
+
+
+insert into Barrio_Cliente values(null,'6','Villa Teresita - Engativa'),
+									 (null,'6','Villa Gladys - Engativa'),
+									 (null,'6','Linterama -Engativa');
+                                     
+                                     
+insert into Cliente values(null,'1','5','1','Dario Pinzon',
+'1021665778','3224368998','Crr 116 n 66- 87',''),
+(null,'1','4','2','Hernan Duque',
+'1021665778','3224368998','Crr 116 n 66- 87',''),
+(null,'1','5','1','Alejandro Abraham',
+'1021665778','3224368998','Crr 116 n 66- 87',''),
+(null,'1','5','1','Sandra Guevara',
+'1021665778','3224368998','Crr 116 n 66- 87',''),
+(null,'1','5','1','Alejandro Suarez',
+'1021665778','3224368998','Crr 116 n 66- 87',''),
+(null,'1','5','3','Aratza Contreras',
+'N/A','N/A','Crr 116 n 66- 87','');
+
+
+
+insert into Tecnico values(null,'1','1','Rodolfo Vargas','3208557457','80115506','assets/img/technicals/papa.jpg'),
+(null,'3','3','Victor Guerrero','3192790141','27968909','assets/img/technicals/vic.jpg'),
+(null,'2','2','Óscar Javier Vargas Díaz','3133043714','1000620103','assets/img/technicals/os.jpg'); 
+
+
+insert into Marca_Artefacto values(null,'9','Samsung'),
+									 (null,'9','Huawei'),
+									 (null,'9','Motorola'),
+									 (null,'9','Asus'),
+									 (null,'9','Lg'),
+                                     (null,'9','Avvio'),
+									 (null,'9','Blu'),
+									 (null,'9','Xiaomi'),
+									 (null,'9','Nokia'),
+                                     (null,'9','Alcatel'),
+                                     (null,'9','Iphone'),
+                                     (null,'8','HTC'),
+                                     (null,'9','Sony'),
+                                     (null,'9','HP'),
+                                     (null,'9','Dell'),
+                                     (null,'9','Krono'),
+                                     (null,'8','MyMmobile'),
+                                     (null,'9','Zte'),
+                                     (null,'9','apple'),
+                                     (null,'9','lanix'),
+                                     (null,'9','microsoft'),
+                                     (null,'9','vodafone'),
+                                     (null,'9','Azumi'),
+                                     (null,'9','Bt-Speaker'),
+                                     (null,'9','Philips'),
+									 (null,'9','Lenovo');  
+                                     
+                                     
+insert into Categoria_Artefacto values(null,'9','Celular'),
+									 (null,'9','Tablet'),
+									 (null,'9','Computador'),
+									 (null,'9','Portatil'),
+									 (null,'8','Reproductor de sonido'),
+									 (null,'8','Otro');    
+                                     
+                                     
+insert into Artefacto values(null,'1','1','9','Samsung Galaxy J5 Prime (SM-G570M)', 
+'El Samsung Galaxy J5 Prime es una variante del Galaxy J5 con una pantalla HD de
+ 5 pulgadas, procesador quad-core a 1.4GHz, 2GB de RAM, 16GB de almacenamiento 
+ interno expandible, cámara principal de 13 megapixels con flash LED, cámara 
+ frontal de 5 MP, lector de huellas dactilares, chasis metálico y Android 6.0 ...'),
+                                      (null,'2','2','9','Tablet Krono 7031 Model Network', 
+'Especificaciones de MODEL-7021.
+PANTALLA --- LCD 7'' 1024X600 Multi Touch (Capacitive 5 puntos)
+PROCESADOR --- CPU MTK 8312 a 1.3 GHz GPU Mall 400MP.
+MEMORIA --- 8GB flash memory, 512MB RAM.
+SISTEMA OPERATIVO --- Android Jelly Bean 4.2.2.
+CONECTIVIDAD --- Wi-Fi IEEE 802.11b/g/n, Bluetooth 3.0/Conexion 2G.');  
+
+							
+insert into Categoria_Servicio values(null,'9','Cambio de pantalla'),
+                                      (null,'9','Cambio de puerto de carga'),
+                                      (null,'9','Cambio de puerto plu'),
+                                      (null,'9','Cambio de tapa trasera'),
+                                      (null,'9','Cambio de visor'),
+                                      (null,'9','Quitar cuenta Google'),
+                                      (null,'9','Hard reset (reseteo de fabrica)'),
+                                      (null,'9','Cambio de sistema operativo (Flasheo)'),
+                                      (null,'9','Creacion de cuentas en apps');                                     
+                 
+                 
+insert into Citacion values(null,'9','cll 52 chapinero alto','2020-11-23','17:44:11'),
+                           (null,'10','cll 40 sur 23-34 suba','2020-12-12','20:41:11'),
+                           (null,'10','carrera 51 fontibon','2020-01-01','19:42:11'); 
+
+
+insert into Servicio values(null,'1','1','2020-01-01','12:12:12',50000),                           
+                           (null,'1','2','2020-01-01','12:12:12',50000),
+                           (null,'1','3','2020-01-01','12:12:12',50000),
+                           (null,'1','4','2020-01-01','12:12:12',50000),
+						   (null,'1','5','2020-01-01','12:12:12',50000);
+                           
+                           
+insert into Revision_Servicio values
+(null,'2','2','1','2','1',1,'Trabajo en construccion y se llenaron de mugre las entradas','Hay que cambiar el display',50000,'2020-04-09','2020-04-09'),
+(null,'1','1','2','1','2',0,'Se me cayo del segundo piso y ahora no enciende','Hay que cambiar el puerto de carga',25000,'2020-04-09','2020-04-10'); 
+
+/*INSERT servicio, estado_servicio, citación*/
+/*Pensar en ponerle un estado al tecnico mas adelante*/
+/*INCLUIR IF NOT EXIST, UNIQUE, ENCRIPTAR*/
+/*ME FALTA INSERTAR DATOS*/
+
+
+/**/
+
+/*CONSULTAS MULTITABLA*/
+/*select * from Servicio inner join Cliente on Servicio.id_cliente_FK = Cliente.id_cliente_PK; *//*SERVICIO Y CLIENTE*/
+
+/*obtener datos*/
+/*
+CREATE VIEW datos_servicio_obt AS SELECT Ser.id_servicio_PK,Ser.id_citacion_FK,Ser.id_cliente_FK,
+Ser.id_tecnico_asignado_FK,Ser.descripcion,Ser.fecha_peticion,Ser.hora_peticion,Ser.valor_precio_servicio,
+esta.tipo,detalle.diagnostico, tec.nombre_tecnico, cli.nombre_cliente, cita.fecha_encuentro, cita.hora_encuentro
+FROM Servicio Ser 
+INNER JOIN Estado_Servicio esta ON Ser.id_estado_servicio_FK = esta.id_estado_servicio_PK
+INNER JOIN Revision_Servicio detalle ON Ser.id_revision_servicio_FK = detalle.id_revision_servicio_PK
+INNER JOIN Tecnico tec ON Ser.id_tecnico_asignado_FK = tec.id_tecnico_PK
+INNER JOIN Cliente cli ON Ser.id_cliente_FK = cli.id_cliente_PK
+INNER JOIN Citacion cita ON Ser.id_citacion_FK = cita.id_citacion_PK;*/
+
+
+/*METER EN UNA VISTA PARA SIMPLIFICAR*/
+/*CREATE VIEW datos_servicio AS SELECT Ser.id_servicio_PK,Ser.id_citacion_FK,Ser.id_cliente_FK,
+Ser.id_tecnico_asignado_FK,Ser.id_revision_servicio_FK,Ser.id_estado_servicio_FK,Ser.descripcion,
+Ser.fecha_hora_peticion,Ser.valor_precio_servicio,cli.id_barrio_FK,cli.id_usuario_FK, 
+cli.id_tipo_documento_FK,cli.numero_documento,cli.telefono,cli.direccion_residencia,esta.tipo FROM Servicio
+INNER JOIN Cliente ON Servicio.id_cliente_FK = Cliente.id_cliente_PK INNER JOIN Estado_Servicio 
+ON Servicio.id_estado_servicio_FK = Estado_Servicio.id_estado_servicio_PK;*/
+
+/*
+CREATE VIEW SCCTRE_servicio AS SELECT  
+									s.id_servicio_PK, -- servicio
+                                     s.diagnostico,
+									 -- date_format(s.fecha_hora_peticion,'%W, %D de %M,\n Hora: %h:%i%p') AS fecha_peticion,
+									 s.fecha_peticion AS fp,
+                                     s.hora_peticion,
+									 s.valor_precio_servicio,	
+									 s.id_citacion_FK,
+                                     -- date_format(cita.fecha_hora_encuentro,'%W, %D de %M,\n Hora: %h:%i%p') AS fecha_cita, -- cita
+									 cita.fecha_encuentro, -- citacion
+                                     cita.hora_encuentro,
+                                     cita.direccion_lugar,
+									 s.id_tecnico_asignado_FK, -- tecnico
+                                     t.nombre_tecnico,
+                                     t.numero_documento,
+                                     t.foto_tecnico,
+                                     s.id_estado_FK, -- estado
+                                     e.tipo,
+                                     s.id_categoria_servicio_FK, -- categoria
+									 cat.nombre_categoria
+                                    -- SUM(valor_precio_servicio) AS ingresos, -- TCS_estadistica /*Estadisticas Iniciales*/
+									-- ROUND(SUM(t.id_tecnico_PK/2 + c.id_cliente_PK/3),0) AS num_usuarios,
+                                    -- ROUND(SUM(s.id_servicio_PK-s.id_servicio_PK*60/100),0) AS num_venta_total,
+                                    -- ROUND(SUM(s.id_servicio_PK-s.id_servicio_PK*60/100),0) AS num_venta_semana,
+                                    -- FLOOR(RAND()*(99-1)+1) AS num_random		*/
+-- ------------------------------------------------------------------------------------------
+/*
+-- Consulta MEGAMultitabla - accediendo a 3 dimensiones
+SELECT ma.nombre as marca, a.modelo,rs.diagnostico,rs.fecha_inicio,rs.fecha_fin,s.descripcion as servicio  from revision_servicio as rs 
+		       inner join servicio as s on s.id_servicio_PK = rs.id_servicio_FK
+               inner join artefacto as a on a.id_artefacto_PK = rs.id_artefacto_FK
+               inner join marca_artefacto as ma on ma.id_marca_artefacto_PK = ma.id_marca_artefacto_PK;
+*/				
+-- ------------------------------------------------------------------------------------------            
+
+
+SET lc_time_names = 'es_ES';
+
+-- VISTA SERVICIO
+CREATE VIEW SEC_servicio AS SELECT s.*,c.*,e.* 
+FROM Servicio s 
+INNER JOIN Estado e ON s.id_estado_servicio_FK = e.id_estado_PK
+INNER JOIN Cliente c ON s.id_cliente_FK = c.id_cliente_PK;
+
+
+-- VISTA CLIENTE
+CREATE VIEW CBUT_cliente AS SELECT b.*,u.*,t.*,c.*
+FROM Cliente c 
+INNER JOIN Barrio_Cliente b ON c.id_barrio_FK = b.id_barrio_PK
+INNER JOIN Usuario u ON c.id_usuario_FK = u.id_usuario_PK
+INNER JOIN Tipo_Documento t ON c.id_tipo_documento_FK = t.id_tipo_documento_PK;
+
+-- SP Detail
+CREATE PROCEDURE sp_getDetailsById(IN id_detail int)
+SELECT *,m.name as movnm,r.id as rental
+FROM Revision_Servicio rs
+INNER JOIN rentals r ON r.id = mr.rental_id
+INNER JOIN movie m ON m.id = mr.movie_id WHERE mr.rental_id = id_detail; -- ese es el berraco parametro
+
+CALL sp_getMoviesById(2);
+ 
+-- descuento a los clientes frecuentes. mas de un millon de pesos. mas de 5 servicios							
+-- eso del if en que casos se usa teniendo en cuenta que el lenguaje sea PHP no lo pueda hacer
+-- si el cliente es frecuente que le haga un descuento
+-- si hay pocas unidades en stock si profe depende el capital de la empresa
+-- Hacer procedimientos para el SI combinados con vistas
+

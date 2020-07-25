@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "",
+    "sources": [
+        "../assets/plugins/swal/src/variables.scss"
+    ],
+    "names": [],
+    "file": "variables.css"
+}
